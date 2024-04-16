@@ -15,7 +15,7 @@ def authenticate_user(username, password):
     cursor = conn.cursor()
 
     # Execute SQL query to authenticate user
-    query = sql.SQL("SELECT * FROM users WHERE username=? AND password= ?", (username, password))
+    query = sql.SQL("SELECT * FROM users WHERE username = %s AND password = %s")
     cursor.execute(query, (username, password))
     user = cursor.fetchone()
 
