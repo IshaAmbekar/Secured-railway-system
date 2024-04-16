@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Reservation System - Home</title>
+    <link rel="stylesheet" href="static\css\styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome, {{ username }}!</h2>
+        <p>Successfully logged in.</p>
+        
+        <!-- Vulnerable search box -->
+        <form action="/search" method="GET" class="search-form" id="search-form">
+            <label for="train-search">Search Trains:</label>
+            <!-- Directly inserting user input without sanitization (vulnerable to XSS) -->
+            <input type="text" id="train-search" name="query" placeholder="Enter train name or number">
+            <button type="submit">Search</button>
+        </form>
+
+        <div id="search-results">
+            <!-- Search results will be displayed here -->
+        </div>
+
+        <!-- Comment box -->
+        <h1>Review</h1>
+    <form action="/add_comment" method="post">
+        <label for="comment">Add a review:</label><br>
+        <textarea name="comment" id="comment" rows="4" cols="50"></textarea><br>
+        <input type="submit" value="Submit">
+    </form>
+    <hr>
+    <h2>Previous reviews:</h2>
+    <ul>
+        {% for comment in comments %}
+        <!-- Use the |safe filter to disable auto-escaping -->
+        <li>{{ comment}}</li> 
+        {% endfor %}
+    </ul>
+    </div>
+
+    <script>
+        // Intentionally vulnerable JavaScript code
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+            var query = document.getElementById('train-search').value;
+            // Construct URL for search API endpoint
+            var searchUrl = '/search?query=' + encodeURIComponent(query);
+            // Fetch search results from the server
+            fetch(searchUrl)
+            .then(response => response.json())
+            .then(data => {
+                // Display search results on the page (vulnerable to XSS)
+                var searchResultsElement = document.getElementById('search-results');
+                searchResultsElement.innerHTML = ''; // Clear previous results
+                if (data.length === 0) {
+                    searchResultsElement.innerHTML = '<p>No trains found.</p>';
+                } else {
+                    data.forEach(function(train) {
+                        var trainElement = document.createElement('p');
+                        // Display train data
+                        trainElement.textContent = 'Name: ' + train.name + ', Number: ' + train.number + ', Source: ' + train.source + ', Destination: ' + train.destination;
+                        searchResultsElement.appendChild(trainElement);
+                    });
+                }
+            });
+            event.preventDefault(); // Prevent the form from submitting
+        });
+    </script>
+</body>
+</html>
+{% endautoescape %}
