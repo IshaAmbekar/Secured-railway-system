@@ -7,7 +7,10 @@
     <title>Railway Reservation System - Home</title>
     <link rel="stylesheet" href="static\css\styles.css">
 </head>
-<body>
+<body style="background-image: url('static/assets/train2.jpg'); background-size: cover; background-position: center top; ">
+    <form action="/logout" method="post" id="logout-form">
+        <button type="submit" style="background-color: rgb(167, 7, 7) ">Logout</button>
+    </form>
     <div class="container">
         <h2>Welcome, {{ username }}!</h2>
         <p>Successfully logged in.</p>
@@ -17,7 +20,7 @@
             <label for="train-search">Search Trains:</label>
             <!-- Directly inserting user input without sanitization (vulnerable to XSS) -->
             <input type="text" id="train-search" name="query" placeholder="Enter train name or number">
-            <button type="submit">Search</button>
+            <button type="submit" class="searchBtn">Search</button>
         </form>
 
         <div id="search-results">
@@ -25,14 +28,14 @@
         </div>
 
         <!-- Comment box -->
-        <h1>Review</h1>
+        <h2>Review</h2>
     <form action="/add_comment" method="post">
         <label for="comment">Add a review:</label><br>
         <textarea name="comment" id="comment" rows="4" cols="50"></textarea><br>
         <input type="submit" value="Submit">
     </form>
     <hr>
-    <h2>Previous reviews:</h2>
+    <h3>Previous reviews:</h3>
     <ul>
         {% for comment in comments %}
         <!-- Use the |safe filter to disable auto-escaping -->

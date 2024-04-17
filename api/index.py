@@ -1,10 +1,12 @@
 import os
+import secrets
 import sys
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from flask import Flask, jsonify, render_template, request, redirect, session, url_for
 import psycopg2
 from api.database import authenticate_user,  initialize_database
 from api.traindb import initialize_traindatabase
 app = Flask(__name__, template_folder='templates')
+app.secret_key = secrets.token_hex(16)
 comments = []
 initialize_database()
 initialize_traindatabase()
@@ -14,21 +16,24 @@ def login():
     username = request.form['username']
     password = request.form['password']
     user = authenticate_user(username, password)
+    session['username'] = username
     if user:
         # Authentication successful, redirect to home page
         return redirect(url_for('home'))
     else:
-        # Authentication failed, redirect back to login page
+        error_message = "Incorrect username or password"
+        session['error_message'] = error_message
         return redirect(url_for('login_page'))
 
 # Route for login page
 @app.route('/')
 def login_page():
-    return render_template('login.html')
+    error_message = session.pop('error_message', None)
+    return render_template('login.html', error_message=error_message)
 
 @app.route('/home')
 def home():
-    username = request.args.get('username', 'user')  # Get the username from the query string
+    username = session.get('username')
     return render_template('home.html', username=username, comments=comments)
 # Route for handling search
 @app.route('/search', methods=['GET'])
@@ -80,6 +85,13 @@ def add_comment():
         
         # Redirect back to the main page after adding the comment
         return redirect(url_for('home'))
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    # Clear the session
+    session.clear()
+    # Redirect to the login page
+    return redirect(url_for('login_page'))
 
 if __name__ == '__main__':
     app.run(debug=True)
